@@ -4,11 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 )
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
 	r := mux.NewRouter()
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello World")
@@ -20,6 +25,6 @@ func main() {
 		fmt.Fprintln(w, "Hello World", id)
 	}).Methods("GET")
 
-	log.Println("Server started on 127.0.0.1:3000")
-	log.Fatal(http.ListenAndServe("127.0.0.1:3000", r))
+	log.Printf("Server started on port :%v\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, r))
 }
