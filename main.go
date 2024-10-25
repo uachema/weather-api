@@ -11,6 +11,8 @@ import (
 
 func main() {
 	port := os.Getenv("PORT")
+	apiKey := os.Getenv("OPEN_WEATHER_API_KEY")
+	fmt.Println(apiKey)
 	if port == "" {
 		port = "3000"
 	}
