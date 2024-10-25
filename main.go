@@ -4,17 +4,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+	r := mux.NewRouter()
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Hello World")
-	})
-	mux.HandleFunc("GET /{id}", func(w http.ResponseWriter, r *http.Request) {
-		v := r.PathValue("id")
-		fmt.Fprintln(w, "Hello World ", v)
-	})
-	log.Println("server started on 127.0.0.1:3000")
-	log.Fatal(http.ListenAndServe("127.0.0.1:3000", mux))
+	}).Methods("GET")
+
+	r.HandleFunc("/{id}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+		fmt.Fprintln(w, "Hello World", id)
+	}).Methods("GET")
+
+	log.Println("Server started on 127.0.0.1:3000")
+	log.Fatal(http.ListenAndServe("127.0.0.1:3000", r))
 }
