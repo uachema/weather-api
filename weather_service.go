@@ -7,58 +7,61 @@ import (
 	"net/http"
 )
 
+// WeatherFetcher defines an interface for retrieving weather data.
+type WeatherProvider interface {
+	FetchCityWeather(city string) (WeatherData, error)
+}
+
 // WeatherService defines a service for retrieving weather data from a specified API.
-// It holds an API key for authentication and a base URL for the API endpoint.
 type WeatherService struct {
 	apiKey  string // API key for authentication with the weather API
 	baseURL string // Base URL for the weather API endpoint
 }
 
 // NewWeatherService initializes and returns a new WeatherService instance with the specified API key.
-// It sets a default base URL pointing to OpenWeather's API endpoint. This default can be overridden
-// by providing a custom URL in the WeatherService struct directly if needed.
 func NewWeatherService(apiKey string) *WeatherService {
-	url := "https://api.openweathermap.org/data/2.5/weather"
 	return &WeatherService{
 		apiKey:  apiKey,
-		baseURL: url,
+		baseURL: "https://api.openweathermap.org/data/2.5/weather",
 	}
 }
 
-// FetchCityWeather retrieves weather data for a given city by sending a request to the weather API.
-// It constructs the API URL with the city name and API key, then makes a GET request to the endpoint.
-//
-// Parameters:
-// - city: the name of the city for which weather data is requested.
-//
-// Returns:
-// - WeatherData: a struct containing parsed weather data if the request is successful.
-// - error: an error if the request fails or if the response cannot be parsed.
-//
-// FetchCityWeather handles HTTP errors by returning an error if the response status code is not 200 OK.
-// It also parses the JSON response into a WeatherData struct, returning it on success.
+// FetchCityWeather retrieves weather data for a given city by making a request to the weather API.
 func (ws *WeatherService) FetchCityWeather(city string) (WeatherData, error) {
-	url := fmt.Sprintf("%s?q=%s&appid=%s", ws.baseURL, city, ws.apiKey)
-
-	// Make an HTTP GET request to fetch the weather data for the specified city
+	url := ws.constructURL(city)
 	res, err := http.Get(url)
 	if err != nil {
-		return WeatherData{}, err // Return error if the HTTP request fails
+		return WeatherData{}, fmt.Errorf("failed to fetch weather data: %v", err)
 	}
-	defer res.Body.Close() // Ensure the response body is closed after reading
+	defer res.Body.Close()
 
-	// Check if the response status code is OK (200)
+	// Validate the HTTP response
+	if err := ws.validateResponse(res); err != nil {
+		return WeatherData{}, err
+	}
+
+	// Parse the response JSON into WeatherData struct
+	return ws.parseWeatherData(res)
+}
+
+// constructURL builds the request URL with the city name and API key.
+func (ws *WeatherService) constructURL(city string) string {
+	return fmt.Sprintf("%s?q=%s&appid=%s", ws.baseURL, city, ws.apiKey)
+}
+
+// validateResponse checks the HTTP response status code and returns an error if not 200 OK.
+func (ws *WeatherService) validateResponse(res *http.Response) error {
 	if res.StatusCode != http.StatusOK {
-		return WeatherData{}, fmt.Errorf("error fetching weather data: status code %d", res.StatusCode)
+		return fmt.Errorf("error fetching weather data: status code %d", res.StatusCode)
 	}
+	return nil
+}
 
-	// Declare a variable to hold the unmarshalled data
+// parseWeatherData decodes the JSON response body into a WeatherData struct.
+func (ws *WeatherService) parseWeatherData(res *http.Response) (WeatherData, error) {
 	var weatherData WeatherData
-	// Decode the JSON response into the weatherData struct
-	err = json.NewDecoder(res.Body).Decode(&weatherData)
-	if err != nil {
-		return WeatherData{}, err // Return error if unmarshalling fails
+	if err := json.NewDecoder(res.Body).Decode(&weatherData); err != nil {
+		return WeatherData{}, fmt.Errorf("error parsing weather data: %v", err)
 	}
-
-	return weatherData, nil // Return the weather data if successful
+	return weatherData, nil
 }

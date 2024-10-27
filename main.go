@@ -1,3 +1,5 @@
+// Package main initializes and runs an API server that fetches weather data from an external service.
+// It uses environment variables for configuration, such as the server's port and the OpenWeather API key.
 package main
 
 import (
@@ -6,28 +8,34 @@ import (
 	"os"
 )
 
-// main function initializes the server, setting up environment variables for port and API key.
+// main function sets up the necessary configurations for the server,
+// including retrieving environment variables and initializing the weather service.
+// It then starts the server and listens on the specified port.
 func main() {
-	// Get the PORT environment variable or use the default value of "3000"
+	// Retrieve the port on which the server will listen from the PORT environment variable.
+	// If PORT is not set, use the default port "3000".
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "3000" // Default to port 3000 if not specified
 	}
 
-	// Get the OpenWeather API key from environment variables
+	// Retrieve the OpenWeather API key from the environment variables.
+	// This key is required to authenticate requests to the weather service.
 	apiKey := os.Getenv("OPEN_WEATHER_API_KEY")
 	if apiKey == "" {
-		log.Fatal("OPEN_WEATHER_API_KEY environment variable is required")
+		log.Fatal("OPEN_WEATHER_API_KEY environment variable is required") // Log an error and exit if the API key is missing
 	}
 
-	// Initialize the WeatherService with the API key
+	// Initialize a new instance of the WeatherService using the API key.
 	weatherService := NewWeatherService(apiKey)
 
-	// Define the server's listening address using the port
+	// Construct the server's listening address by combining ":" with the specified port.
 	listenAddr := fmt.Sprintf(":%s", port)
 
-	// Create and start the API server with the specified address and weather service
-	server := NewAPIServer(listenAddr, *weatherService)
+	// Initialize a new API server with the specified listening address and weather service instance.
+	server := NewAPIServer(listenAddr, weatherService)
+
+	// Start the server and log any errors that occur if the server fails to start.
 	if err := server.Run(); err != nil {
 		log.Fatalf("Could not start server: %v", err)
 	}

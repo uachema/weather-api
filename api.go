@@ -12,18 +12,18 @@ import (
 // APIServer defines an HTTP API server with a specified listening address, router for routing requests,
 // and an injected WeatherService for fetching weather data.
 type APIServer struct {
-	listenAddr     string         // Server's listening address
-	router         *mux.Router    // Router for managing routes and handling requests
-	weatherService WeatherService // Service for fetching weather data
+	listenAddr      string          // Server's listening address
+	router          *mux.Router     // Router for managing routes and handling requests
+	weatherProvider WeatherProvider // Provider for fetching weather data
 }
 
 // NewAPIServer creates and initializes a new APIServer with the given listening address and WeatherService.
 // It sets up the router with predefined routes and returns the server instance.
-func NewAPIServer(listenAddr string, weatherService WeatherService) *APIServer {
+func NewAPIServer(listenAddr string, weatherProvided WeatherProvider) *APIServer {
 	server := &APIServer{
-		listenAddr:     listenAddr,
-		router:         mux.NewRouter(),
-		weatherService: weatherService,
+		listenAddr:      listenAddr,
+		router:          mux.NewRouter(),
+		weatherProvider: weatherProvided,
 	}
 	server.setupRoutes()
 	return server
@@ -59,7 +59,7 @@ func (s *APIServer) handleRoot(w http.ResponseWriter, r *http.Request) error {
 
 	// Fetch weather data for each specified city
 	for _, city := range cities {
-		weatherData, err := s.weatherService.FetchCityWeather(city)
+		weatherData, err := s.weatherProvider.FetchCityWeather(city)
 		if err == nil {
 			results = append(results, weatherData)
 		}
