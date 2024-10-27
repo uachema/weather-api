@@ -48,7 +48,11 @@ func (s *APIServer) setupRoutes() {
 // - error: An error if the server fails to start.
 func (s *APIServer) Run() error {
 	log.Printf("Server started on port %s", s.listenAddr)
-	return http.ListenAndServe(s.listenAddr, s.router)
+	if err := http.ListenAndServe(s.listenAddr, s.router); err != nil {
+		log.Fatalf("Could not start server: %v", err) // Log fatal error if server fails to start
+		return err
+	}
+	return nil
 }
 
 // handleRoot handles requests to the root endpoint ("/").
@@ -68,6 +72,7 @@ func (s *APIServer) handleRoot(w http.ResponseWriter, r *http.Request) error {
 	cities := r.URL.Query()["city"]
 	if len(cities) == 0 {
 		// If no cities are provided, return a bad request response
+		log.Println("No cities provided in the query parameter") // Log the missing cities
 		return writeJSON(w, http.StatusBadRequest, APIError{Error: "At least one city parameter is required"})
 	}
 
@@ -81,6 +86,7 @@ func (s *APIServer) handleRoot(w http.ResponseWriter, r *http.Request) error {
 
 	// Create a successful response
 	response := APIResponse{Message: "Weather fetched successfully", Data: results}
+	log.Printf("Successfully fetched weather data for cities: %v", cities) // Log successful data fetch
 	return writeJSON(w, http.StatusOK, response)
 }
 

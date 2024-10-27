@@ -98,10 +98,8 @@ func (ws *WeatherService) FetchCitiesWeather(cities []string) ([]WeatherData, er
 	}
 
 	// Close the channel after all goroutines have completed
-	go func() {
-		wg.Wait() // Wait for all goroutines to finish
-		close(ch) // Close the results channel
-	}()
+	wg.Wait() // Wait for all goroutines to finish
+	close(ch) // Close the results channel
 
 	// Collect results from the channel
 	var result []WeatherData
