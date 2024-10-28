@@ -1,8 +1,8 @@
 build:
-	@go build -o ./bin/weather-api
+	@go build -o ./bin/weather-api ./cmd
 
 run: build
-	@PORT=3000 ./bin/weather-api
+	@ ./bin/weather-api
 
 test:
 	@go test -v ./...

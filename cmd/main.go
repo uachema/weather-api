@@ -6,12 +6,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/uachema/weather-api/pkg/server"
+	"github.com/uachema/weather-api/pkg/weather"
 )
 
 // main function sets up the necessary configurations for the server,
 // including retrieving environment variables and initializing the weather service.
 // It then starts the server and listens on the specified port.
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env file not found")
+	}
+
 	// Retrieve the port on which the server will listen from the PORT environment variable.
 	// If PORT is not set, use the default port "3000".
 	port := os.Getenv("PORT")
@@ -27,13 +36,13 @@ func main() {
 	}
 
 	// Initialize a new instance of the WeatherService using the API key.
-	weatherService := NewWeatherService(apiKey)
+	weatherService := weather.NewWeatherService(apiKey)
 
 	// Construct the server's listening address by combining ":" with the specified port.
 	listenAddr := fmt.Sprintf(":%s", port)
 
 	// Initialize a new API server with the specified listening address and weather service instance.
-	server := NewAPIServer(listenAddr, weatherService)
+	server := server.NewAPIServer(listenAddr, weatherService)
 
 	// Start the server and log any errors that occur if the server fails to start.
 	if err := server.Run(); err != nil {

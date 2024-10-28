@@ -1,5 +1,4 @@
-// Package main provides a WeatherService for retrieving weather data from an external API.
-package main
+package weather
 
 import (
 	"encoding/json"
@@ -8,12 +7,6 @@ import (
 	"net/http"
 	"sync"
 )
-
-// WeatherProvider defines an interface for retrieving weather data.
-type WeatherProvider interface {
-	FetchCityWeather(city string) (WeatherData, error)         // Fetch weather data for a single city
-	FetchCitiesWeather(cities []string) ([]WeatherData, error) // Fetch weather data for multiple cities
-}
 
 // WeatherService defines a service for retrieving weather data from a specified API.
 type WeatherService struct {

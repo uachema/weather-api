@@ -1,4 +1,4 @@
-package main
+package weather
 
 // WeatherData represents the weather information returned from the OpenWeather API.
 // It includes data for coordinates, current conditions, main metrics like temperature, wind, and visibility,
